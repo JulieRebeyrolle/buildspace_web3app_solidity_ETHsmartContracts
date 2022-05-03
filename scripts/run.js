@@ -1,24 +1,45 @@
 const main = async () => {
-    const [owner, randomPerson] =  await hre.ethers.getSigners();
     const musicContractFactory = await hre.ethers.getContractFactory('MusicPortal');
-    const musicContract = await musicContractFactory.deploy();
+    const musicContract = await musicContractFactory.deploy({
+        value: hre.ethers.utils.parseEther("0.1"),
+    });
     await musicContract.deployed();
+    console.log("MusicContract address:", musicContract.address);
 
-    console.log('Contract deployed to:', musicContract.address);
-    console.log('Contract deployed by:', owner.address);
+    let contractBalance = await hre.ethers.provider.getBalance(
+        musicContract.address
+    );
+    console.log(
+        "Contract balance:",
+        hre.ethers.utils.formatEther(contractBalance)
+    );
 
-    let songCount;
-    songCount = await musicContract.getTotalSongs();
+    /*
+     * Send song
+     */
+    let songTxn = await musicContract.shareSong("https://open.spotify.com/track/5upkLQtfQm3ODXH2DSS6mk?si=84593d6bc03a44c9");
+    await songTxn.wait(); // Wait for the transaction to be mined
 
-    let waveTxn = await musicContract.shareSong();
+    contractBalance = await hre.ethers.provider.getBalance(musicContract.address);
+    console.log(
+        "Contract balance:",
+        hre.ethers.utils.formatEther(contractBalance)
+    );
+
+    const waveTxn = await musicContract.shareSong("This is wave #1");
     await waveTxn.wait();
 
-    songCount = await musicContract.getTotalSongs();
+    const waveTxn2 = await musicContract.shareSong("This is wave #2");
+    await waveTxn2.wait();
 
-    waveTxn = await musicContract.connect(randomPerson).shareSong();
-    await waveTxn.wait();
+    contractBalance = await hre.ethers.provider.getBalance(musicContract.address);
+    console.log(
+        "Contract balance:",
+        hre.ethers.utils.formatEther(contractBalance)
+    );
 
-    songCount = await musicContract.getTotalSongs();
+    let allSongs = await musicContract.getAllSongs();
+    console.log(allSongs);
 };
 
 const runMain = async () => {
