@@ -13,13 +13,13 @@ contract MusicPortal {
 
     struct Song {
         address userAddress;
-        string message;
+        string url;
         uint256 timestamp;
     }
 
     Song[] songs;
 
-    mapping(address => uint256) public lastWavedAt;
+    mapping(address => uint256) public lastSharedAt;
 
     constructor() payable {
         seed = (block.timestamp + block.difficulty) % 100;
@@ -27,11 +27,11 @@ contract MusicPortal {
 
     function shareSong(string memory _message) public {
         require(
-            lastWavedAt[msg.sender] + 15 seconds < block.timestamp,
-            "Wait 15m"
+            lastSharedAt[msg.sender] + 15 seconds < block.timestamp,
+            "Wait a little"
         );
 
-        lastWavedAt[msg.sender] = block.timestamp;
+        lastSharedAt[msg.sender] = block.timestamp;
 
         totalSongsShared ++;
 
